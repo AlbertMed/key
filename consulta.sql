@@ -1,6 +1,7 @@
 DECLARE @fecha DATETIME = GETDATE()
                         DECLARE @rango INT = '7'
-                        DECLARE @monedaId UNIQUEIDENTIFIER = '1EA50C6D-AD92-4DE6-A562-F155D0D516D3'
+                        DECLARE @monedaDolar UNIQUEIDENTIFIER = '1EA50C6D-AD92-4DE6-A562-F155D0D516D3'
+			DECLARE @monedaPeso UNIQUEIDENTIFIER = '748BE9C9-B56D-4FD2-A77F-EE4C6CD226A1'
                         DECLARE @Decimales Decimal
                         SET @Decimales = ( SELECT CMA_Valor FROM ControlesMaestros WHERE CMA_Control LIKE 'CMA_VEN_DecimalesCantidades')
                         SELECT
@@ -48,8 +49,8 @@ DECLARE @fecha DATETIME = GETDATE()
                                 PROVEEDOR,
                                 PRO_ProveedorId,
                                 FP_FacturaProveedorId,
-                                FP_FechaFactura,
-                                FECHA_VENCIMIENTO,
+                                FORMAT (FP_FechaFactura, 'dd/MM/yyyy ') FP_FechaFactura,
+                                FORMAT (FECHA_VENCIMIENTO, 'dd/MM/yyyy ') FECHA_VENCIMIENTO,
 
                                 case when
                                     cast(ROUND ( CASE WHEN SUM((ROUND(SubTotal, CONVERT(int, @Decimales)) - ROUND(Descuento, CONVERT(int, @Decimales))) + ROUND(IVA, Convert( int, @Decimales))) -
@@ -192,8 +193,7 @@ DECLARE @fecha DATETIME = GETDATE()
                                                        FTRT_FTR_FacturaId
                                             ) AS FacturasRetenciones ON FP_FacturaProveedorId = FTRT_FTR_FacturaId
                                  INNER JOIN Monedas ON FP_MON_MonedaId = MON_MonedaId
-								 LEFT JOIN MonedasParidad on MonedasParidad.MONP_MON_MonedaId = MON_MonedaId
-                                 AND CAST(MONP_FechaInicio AS DATE) =  convert(varchar,DATEADD(d,-1,GETDATE()), 23)
+								 
 								 LEFT JOIN TerminosPago ON FP_TEP_TerminoPagoId = TEP_TerminoPagoId
                         LEFT JOIN Proveedores on PRO_ProveedorId = FP_PRO_ProveedorId
                         left join Ciudades on PRO_CIU_CiudadId=CIU_CiudadId
@@ -279,4 +279,4 @@ DECLARE @fecha DATETIME = GETDATE()
                         WHERE montoActual > 0
                         AND MON_MonedaId = @monedaId
                         ORDER BY  MON_Nombre, PROVEEDOR, DiasTranscurridosVencimiento desc,
-                                  FECHA_VENCIMIENTO ASC, FP_CodigoFactura ASC
+                                  ASSUM.FECHA_VENCIMIENTO ASC, FP_CodigoFactura ASC
